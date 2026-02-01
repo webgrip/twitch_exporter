@@ -1,8 +1,8 @@
 # Twitch Exporter
 
-[![CircleCI](https://circleci.com/gh/damoun/twitch_exporter/tree/master.svg?style=shield)][circleci]
-[![Docker Pulls](https://img.shields.io/docker/pulls/damoun/twitch-exporter.svg?maxAge=604800)][hub]
-[![Go Report Card](https://goreportcard.com/badge/github.com/damoun/twitch_exporter)][goreportcard]
+[![CircleCI](https://circleci.com/gh/webgrip/twitch_exporter/tree/master.svg?style=shield)][circleci]
+[![Docker Pulls](https://img.shields.io/docker/pulls/webgrip/twitch-exporter.svg?maxAge=604800)][hub]
+[![Go Report Card](https://goreportcard.com/badge/github.com/webgrip/twitch_exporter)][goreportcard]
 
 Export [Twitch](https://dev.twitch.tv/docs/api/reference) metrics to [Prometheus](https://github.com/prometheus/prometheus).
 
@@ -15,6 +15,68 @@ make
 
 ## Exported Metrics
 
+This exporter now provides a set of **bounded-label** metrics intended for long-term Prometheus storage.
+Some legacy metrics are kept for compatibility but are **high-cardinality** and are disabled by default.
+
+### Recommended (bounded labels)
+
+**Core Helix polling (enabled by default):**
+
+| Metric | Meaning | Labels |
+| ------ | ------- | ------ |
+| twitch_channel_live | Whether the channel is currently live (1/0). | channel, role |
+| twitch_channel_viewers | Current viewer count (0 when offline). | channel, role |
+| twitch_channel_stream_started_at_seconds | Stream start time as unix timestamp (0 when offline). | channel, role |
+| twitch_channel_stream_uptime_seconds | Stream uptime seconds (0 when offline). | channel, role |
+| twitch_channel_category_id | Current category/game numeric id (0 when offline/unknown). | channel, role |
+| twitch_channel_title_change_total | Observed title changes (poll-based). | channel, role |
+| twitch_channel_category_change_total | Observed category changes (poll-based). | channel, role |
+| twitch_channel_stream_starts_total | Observed stream starts (offline→live). | channel, role |
+| twitch_channel_stream_ends_total | Observed stream ends (live→offline). | channel, role |
+
+**EventSub self-only (disabled by default):**
+
+| Metric | Meaning | Labels |
+| ------ | ------- | ------ |
+| twitch_eventsub_notifications_total | Total EventSub notifications received. | channel, role, event_type |
+| twitch_eventsub_subscription_desired | Exporter desires a subscription for this type (1/0). | event_type |
+| twitch_eventsub_subscription_active | Subscription appears active/enabled (best-effort) (1/0). | event_type |
+| twitch_channel_follows_total | Follows observed via EventSub. | channel |
+| twitch_channel_subscriptions_total | Subscriptions observed via EventSub. | channel, kind |
+| twitch_channel_gift_subscriptions_total | Gift subscription events observed via EventSub. | channel |
+| twitch_channel_bits_total | Bits observed via EventSub. | channel |
+| twitch_channel_bits_events_total | Cheer events observed via EventSub. | channel |
+| twitch_channel_points_redemptions_total | Channel points redemptions observed via EventSub. | channel, reward_group |
+| twitch_channel_raids_in_total | Raids into the channel observed via EventSub. | channel |
+| twitch_channel_raids_out_total | Raids out of the channel observed via EventSub. | channel |
+| twitch_ads_ad_breaks_total | Ad breaks observed via EventSub (if supported). | channel |
+| twitch_ads_minutes_total | Ad minutes observed via EventSub (if durations provided). | channel |
+| twitch_hype_train_events_total | Hype train lifecycle events observed via EventSub. | channel, stage |
+| twitch_goals_events_total | Goal lifecycle events observed via EventSub. | channel, stage |
+| twitch_polls_events_total | Poll lifecycle events observed via EventSub. | channel, stage |
+| twitch_predictions_events_total | Prediction lifecycle events observed via EventSub. | channel, stage |
+| twitch_charity_events_total | Charity lifecycle events observed via EventSub. | channel, stage |
+| twitch_moderation_actions_total | Moderation actions observed via EventSub. | channel, action |
+
+**Runtime/instrumentation (enabled automatically):**
+
+| Metric | Meaning | Labels |
+| ------ | ------- | ------ |
+| twitch_oauth_token_present | Whether an OAuth token is present (1/0). | token_type |
+| twitch_oauth_scope_present | Whether a known OAuth scope is present on the validated user token (1/0). | scope |
+| twitch_api_requests_total | Total Twitch API HTTP requests by surface/endpoint/status class. | api, endpoint, code_class |
+| twitch_api_rate_limit_remaining | Rate limit remaining if provided. | api |
+| twitch_api_rate_limit_reset_at_seconds | Rate limit reset timestamp if provided. | api |
+| twitch_collector_last_success_timestamp_seconds | Last successful collector run time. | collector |
+| twitch_collector_errors_total | Collector errors by reason. | collector, reason |
+| twitch_collector_disabled_total | Collector disabled count by reason. | collector, reason |
+| twitch_eventsub_signature_fail_total | EventSub webhook signature failures. | reason |
+
+### Legacy (high-cardinality labels)
+
+These metrics are retained for compatibility but are **not recommended** for long-term storage because they include
+labels like `game` and `chatter_username`.
+
 | Metric | Meaning | Labels |
 | ------ | ------- | ------ |
 | twitch_channel_up | Is the twitch channel Online. | username, game |
@@ -24,13 +86,20 @@ make
 | twitch_channel_subscribers_total | Is the total number of subscriber on a twitch channel. | username, tier, gifted |
 | twitch_channel_chat_messages_total | Is the total number of chat messages from a user within a channel. | username, chatter_username |
 
+## Self-only mode (your channel)
+
+If you only want metrics for your own channel, set `TWITCH_CHANNEL_1=yonnurs` in `.env` and run `docker compose up --build`.
+The exporter treats the first `--twitch.channel` as `role=self` automatically (backwards-compatible).
+
 ### Flags
 
 ```bash
 ./twitch_exporter --help
 ```
 
-* __`twitch.channel`:__ The name of a twitch channel.
+* __`twitch.self-channel`:__ Your own Twitch channel login (role=self). Required for privileged/self-only metrics.
+* __`twitch.watch-channel`:__ A Twitch channel login to watch (role=watch). Can be provided multiple times; max 100.
+* __`twitch.channel`:__ (Deprecated) Name of a Twitch channel. Treated as role=watch. For backwards-compat, the first `--twitch.channel` is treated as `role=self` if `--twitch.self-channel` is not provided.
 * __`twitch.client-id`:__ The client ID to request the New Twitch API (helix).
 * __`twitch.access-token`:__ The access token to request the New Twitch API (helix).
 * __`log.format`:__ Set the log target and format. Example: `logger:syslog?appname=bob&local=7`
@@ -42,15 +111,19 @@ make
 * __`eventsub.enabled`:__ Enable eventsub endpoint (default: false).
 * __`eventsub.webhook-url`:__ The url your collector will be expected to be hosted at, eg: http://example.svc/eventsub (Must end with `/eventsub`).
 * __`eventsub.webhook-secret`:__ Secure 1-100 character secret for your eventsub validation
+* __`--[no-]collector.channel_core`:__ Enable the channel_core collector (default: enabled).
+* __`--[no-]collector.watchlist`:__ Enable the watchlist collector (default: enabled).
+* __`--[no-]collector.eventsub_self`:__ Enable the eventsub_self collector (default: disabled**).
 * __`--[no-]collector.channel_followers_total`:__ Enable the channel_followers_total collector (default: enabled).
 * __`--[no-]collector.channel_subscribers_total`:__ Enable the channel_subscribers_total collector (default: disabled*).
-* __`--[no-]collector.channel_up`:__ Enable the channel_up collector (default: enabled).
-* __`--[no-]collector.channel_viewers_total`:__ Enable the channel_viewers_total collector (default: enabled).
+* __`--[no-]collector.channel_up`:__ Enable the channel_up collector (default: disabled***).
+* __`--[no-]collector.channel_viewers_total`:__ Enable the channel_viewers_total collector (default: disabled***).
 * __`--[no-]collector.channel_chat_messages_total`:__ Enable the channel_chat_messages_total (default: disabled**).
 
 ```
-* Disabled due to the requirement of a user access token, which must be acquired outside of the collector
-** Disabled due to event-sub being disabled by default
+* Disabled due to the requirement of a user access token, which must be acquired outside of the exporter
+** Disabled due to requiring an EventSub webhook endpoint
+*** Disabled by default due to high-cardinality labels (see "Legacy" metrics above)
 ```
 
 ## Event-sub
@@ -70,19 +143,23 @@ You can read more about the process [here](https://dev.twitch.tv/docs/chat/authe
 
 1. Install the twitch-cli
 1. Ensure your twitch app has localhost:3000 added as a redirect uri
-1. `twitch token -u -s 'channel:bot user:chat:read user:bot channel:read:subscriptions'` (At this point, since you are getting a user token, you may as well get the subscriptions metric too)
-1. Start the collector with `client-id`, `client-secret`, `access-token`, and `refresh-token` defined
+1. Create a user token with the scopes you want to observe. For `eventsub_self`, the exporter understands these scopes:
+  `bits:read`, `channel:read:subscriptions`, `channel:read:redemptions`, `channel:read:ads`, `channel:read:charity`,
+  `channel:read:goals`, `channel:read:hype_train`, `channel:read:polls`, `channel:read:predictions`,
+  `moderator:read:followers`, `moderation:read`.
+1. Start the exporter with `client-id`, `client-secret`, `access-token`, and `refresh-token` defined, plus EventSub webhook settings.
 
 ```
-go run twitch_exporter.go \
+cd src && go run . \
   --twitch.client-id xxx \
   --twitch.client-secret xxx \
   --twitch.access-token xxx \
   --twitch.refresh-token xxx \
-  --twitch.channel surdaft \
+  --twitch.self-channel surdaft \
   --eventsub.enabled \
   --eventsub.webhook-url 'https://xxx/eventsub' \
   --eventsub.webhook-secret xxxx \
+  --collector.eventsub_self \
   --collector.channel_chat_messages_total \
   --collector.channel_subscribers_total \
   --no-collector.channel_followers_total \
@@ -96,107 +173,44 @@ TODO
 
 ## Using Docker
 
-You can deploy this exporter using the [damoun/twitch-exporter](https://hub.docker.com/r/damoun/twitch-exporter/) Docker image.
+You can deploy this exporter using the [webgrip/twitch-exporter](https://hub.docker.com/r/webgrip/twitch-exporter/) Docker image.
 
 For example:
 
 ```bash
-docker pull damoun/twitch-exporter
+docker pull webgrip/twitch-exporter
 
 docker run -d -p 9184:9184 \
-        damoun/twitch-exporter \
+        webgrip/twitch-exporter \
         --twitch.client-id <secret> \
         --twitch.access-token <secret> \
         --twitch.channel dam0un
 ```
 
+## Using Docker Compose
+
+For local development and running the exporter without installing Go locally:
+
+```bash
+cp .env.example .env
+# edit .env
+
+docker compose up --build
+```
+
+If you see `twitch_exporter_configured 0` in `/metrics`, set `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` in `.env`.
+
 ## Using Helm
-[Helm](https://helm.sh) must be installed to use the charts.  Please refer to
-Helm's [documentation](https://helm.sh/docs) to get started.
 
-Once Helm has been set up correctly, add the repo as follows:
+This repository no longer ships a Helm chart.
 
-  helm repo add twitch-exporter https://damoun.github.io/twitch-exporter
+If you want to deploy to Kubernetes, use a generic chart like `oci://ghcr.io/bjw-s-labs/helm/app-template` and configure:
 
-If you had already added this repo earlier, run `helm repo update` to retrieve
-the latest versions of the packages.  You can then run `helm search repo
-twitch-exporter` to see the charts.
+- Container args/env to match the flags in this README
+- Service on port `9184`
+- Ingress so `GET /metrics` is reachable by Prometheus
+- If enabling EventSub: a publicly reachable HTTPS `POST /eventsub` endpoint, with request body and Twitch headers preserved
 
-To install the twitch-exporter chart:
-
-    helm install my-twitch-exporter twitch-exporter/twitch-exporter
-
-To uninstall the chart:
-
-    helm delete my-twitch-exporter
-
-## Using Helmfile
-You are able to use a helm chart to manage your exporter, create a file named
-`helmfile.yaml` and then add this:
-
-```yaml
-repositories:
-  - name: twitch-exporter
-    url: https://damoun.github.com/twitch_exporter/
-  - name: grafana
-    url: https://grafana.github.io/helm-charts
-
-releases:
-  - name: alloy
-    namespace: twitch-exporter
-    chart: grafana/alloy
-    values:
-      - ./alloy.values.yaml
-
-  - name: twitch-exporter
-    namespace: twitch-exporter
-    chart: twitch-exporter/twitch-exporter
-    values:
-      - ./twitch-exporter.values.yaml
-```
-
-Then create a file called `alloy.values.yaml`:
-```yaml
-alloy:
-  configMap:
-    create: true
-    content: |-
-      prometheus.remote_write "mimir" {
-        endpoint {
-          # make sure to update this url with your proper push endpoint info,
-          # cloud for example required authentication.
-          url = "xxx/api/v1/push"
-        }
-      }
-
-      prometheus.scrape "twitch_exporter_metrics" {
-        targets         = [{__address__ = "twitch-exporter.twitch-exporter.svc:9184"}]
-        metrics_path    = "/metrics"
-        forward_to      = [prometheus.remote_write.mimir.receiver]
-        scrape_timeout  = "1m"
-        # twitch cache is going to be a pain anyway, so 5m scrape helps with any
-        # potential rate limits and works around cache
-        scrape_interval = "5m"
-      }
-```
-
-Create a file named `twitch-exporter.values.yaml`
-```yaml
-twitch:
-  clientId: "muy2fhyb2esa49w3n70fpumxr78ruh"
-  accessToken: "dvmkxzay1xi4erxfu0x56h6qsfzukj"
-  channels:
-    - jordofthenorth
-    - timthetatman
-    - dam0un
-    - surdaft
-```
-
-> Note: You can add see more config options in charts/twitch-exporter/values.yaml.
-> Ingress is disabled by default, however you can enable it to allow for public
-> access to your exporter. Such as if you use a firewall and scrape from another
-> device.
-
-[circleci]: https://circleci.com/gh/damoun/twitch_exporter
-[hub]: https://hub.docker.com/r/damoun/twitch-exporter/
-[goreportcard]: https://goreportcard.com/report/github.com/damoun/twitch_exporter
+[circleci]: https://circleci.com/gh/webgrip/twitch_exporter
+[hub]: https://hub.docker.com/r/webgrip/twitch-exporter/
+[goreportcard]: https://goreportcard.com/report/github.com/webgrip/twitch_exporter

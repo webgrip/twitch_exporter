@@ -6,12 +6,14 @@
 *.dylib
 twitch_exporter
 
+# Local environment (never commit secrets)
+.env
+
 # ignore helm chart configuration if local
 values.yaml
 *.values.yaml
 
 # Don't ignore committing the helm chart values file
-!charts/twitch-exporter/values.yaml
 
 # ignore helmfile, which is used to manage helm deployments
 helmfile.yaml

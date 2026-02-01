@@ -1,0 +1,9 @@
+.git
+.github
+charts
+.build
+bin
+**/*.log
+**/*.tmp
+**/*.swp
+**/.DS_Store

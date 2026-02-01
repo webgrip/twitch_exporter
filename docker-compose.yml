@@ -1,0 +1,39 @@
+services:
+  twitch-exporter:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GO_VERSION: "1.24.2"
+    image: twitch-exporter:local
+    ports:
+      - "9184:9184"
+    command:
+      - "--web.listen-address=:9184"
+      - "--web.telemetry-path=/metrics"
+      - "--twitch.client-id=${TWITCH_CLIENT_ID:-}"
+
+      # Choose ONE auth method by uncommenting:
+      - "--twitch.client-secret=${TWITCH_CLIENT_SECRET:-}"
+      # - "--twitch.access-token=${TWITCH_ACCESS_TOKEN}"
+      # - "--twitch.refresh-token=${TWITCH_REFRESH_TOKEN}"
+
+      # Add one flag per channel (repeatable)
+      # Preferred explicit self channel (works with existing TWITCH_CHANNEL_1 in .env):
+      - "--twitch.self-channel=${TWITCH_CHANNEL_1:-yonnurs}"
+      # Back-compat (deprecated):
+      # - "--twitch.channel=${TWITCH_CHANNEL_1:-yonnurs}"
+
+      # EventSub (self-only deep metrics): requires a publicly reachable webhook URL ending in /eventsub.
+      # Uncomment and set env vars in .env:
+      #   EVENTSUB_WEBHOOK_URL=https://<public-host>/eventsub
+      #   EVENTSUB_WEBHOOK_SECRET=<random 1-100 chars>
+      #   TWITCH_ACCESS_TOKEN=<user token>
+      #   TWITCH_REFRESH_TOKEN=<refresh token>
+      # - "--eventsub.enabled"
+      # - "--eventsub.webhook-url=${EVENTSUB_WEBHOOK_URL:-}"
+      # - "--eventsub.webhook-secret=${EVENTSUB_WEBHOOK_SECRET:-}"
+      # - "--collector.eventsub_self"
+    restart: unless-stopped

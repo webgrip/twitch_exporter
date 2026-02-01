@@ -1,0 +1,107 @@
+site_name: "Twitch Exporter TechDocs"
+site_description: "Documentation for the Twitch Prometheus exporter (Helix + EventSub)"
+
+# TechDocs uses docs/techdocs/docs by default.
+
+theme:
+  name: "material"
+  custom_dir: overrides
+  # analytics:
+  #   gtag: G-FAKE
+  features:
+    - search.suggest
+    - search.highlight
+    - search.share
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.instant.preview
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.tabs.sections
+    - navigation.tabs.expand
+    - navigation.prune
+    - toc.follow
+    - toc.integrate
+    - navigation.top
+
+extra_javascript:
+  - javascripts/feedback.js
+
+nav:
+  - Home: index.md
+  - Overview: project-overview.md
+  - Quickstart: quickstart.md
+  - Configuration: configuration.md
+  - Metrics: metrics.md
+  - EventSub: eventsub.md
+  - Deployment:
+      - Docker: deployment/docker.md
+      - Kubernetes: deployment/kubernetes.md
+  - Operations:
+      - Troubleshooting: operations/troubleshooting.md
+      - Runbooks:
+          - Collectors disabled: operations/runbooks/collectors-disabled.md
+          - EventSub verification: operations/runbooks/eventsub-verification.md
+          - Rate limits: operations/runbooks/rate-limits.md
+  - Development: development.md
+  - Security: security.md
+
+# https://www.mkdocs.org/user-guide/configuration
+plugins:
+  - techdocs-core:
+      use_material_search: true
+  - search:
+      min-search-length: 2
+      prebuild_index: true
+      indexing: full
+  - mermaid2:
+      arguments:
+        securityLevel: "loose"
+  - macros
+  - privacy
+
+markdown_extensions:
+  - markdown_inline_mermaid
+  - markdown_inline_graphviz
+
+extra:
+  # analytics:
+  #   provider: custom
+  #   property: G-FAKE
+  #   feedback:
+  #     title: Was this page helpful?
+  #     ratings:
+  #       - icon: material/emoticon-happy-outline
+  #         name: This page was helpful
+  #         data: 1
+  #         note: >-
+  #           Thanks for your feedback!
+  #       - icon: material/emoticon-sad-outline
+  #         name: This page could be improved
+  #         data: 0
+  #         note: >-
+  #           Thanks for your feedback! Help us improve this page by
+  #           using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
+  consent:
+    title: Cookie consent
+    description: >-
+      We use cookies to gather insights into our site's traffic and to ensure you're able to leave feedback.
+      If you do not wish to leave feedback or be tracked, feel free to reject the cookies :)
+
+      Thank you for visiting!
+    actions:
+      - accept
+      - manage
+      - reject
+    cookies:
+      analytics: Google Analytics
+      github: Github
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/webgrip
+  generator: false
+
+copyright: >
+  webgrip © 2013 - 2026 Building Better Developers  -
+  <a href="#__consent">Change cookie settings</a>

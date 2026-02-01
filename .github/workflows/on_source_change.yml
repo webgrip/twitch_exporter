@@ -1,0 +1,43 @@
+name: '[Workflow] On Source Change'
+
+concurrency:
+  group: push-${{ github.ref_name }}
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'ops/**'
+      - 'src/**'
+      - '.releaserc.json'
+      - '.releaserc.js'
+      - '.github/workflows/on_source_change.yml'
+      - '.github/workflows/on_release_published.yml'
+
+jobs:
+  static-analysis:
+    name: 'Static Analysis'
+    uses: webgrip/workflows/.github/workflows/application-static-analysis.yml@main
+
+  test:
+    name: 'Test'
+    needs: [static-analysis]
+    if: >
+      always()
+      && needs.static-analysis.result == 'success'
+    uses: webgrip/workflows/.github/workflows/application-test.yml@main
+
+  release-publish:
+    name: 'Release'
+    needs: [static-analysis, test]
+    if: >
+      always()
+      && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release'))
+      && needs.static-analysis.result == 'success'
+      && needs.test.result == 'success'
+    uses: webgrip/workflows/.github/workflows/application-release-publish.yml@main
+    secrets:
+      WEBGRIP_CI_APP_ID: ${{ secrets.WEBGRIP_CI_APP_ID }}
+      WEBGRIP_CI_APP_PRIVATE_KEY: ${{ secrets.WEBGRIP_CI_APP_PRIVATE_KEY }}
+

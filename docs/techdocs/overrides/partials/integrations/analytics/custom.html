@@ -1,0 +1,33 @@
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ config.extra.analytics.property }}"></script>
+<script>
+  var property = "{{ config.extra.analytics.property }}"
+
+  window.dataLayer = window.dataLayer || [];
+
+  window.gtag = function() {
+    console.log(arguments);
+    dataLayer.push(arguments);
+  }
+
+  /* Wait for page to load and application to mount */
+  document.addEventListener("DOMContentLoaded", function() {
+
+    window.gtag('js', new Date());
+    window.gtag('config', property);
+
+    window. gtag('event', 'page_view', {
+      'send_to': property,
+      'page_title': document.title,
+      'page_location': window.location.href,
+      'page_path': window.location.pathname
+    });
+
+    location$.subscribe(function(url) {
+      window.gtag('config', property, {
+            'page_title': document.title,
+            'page_location': url,
+            'page_path': window.location.pathname
+        });
+    });
+  });
+</script>

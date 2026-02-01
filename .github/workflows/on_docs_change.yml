@@ -1,0 +1,30 @@
+name: '[Workflow] On Documentation Change'
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'docs/techdocs/**'
+      - '.github/workflows/on_docs_change.yml'
+  workflow_dispatch:
+    inputs:
+      source-dir:
+        type: string
+        description: 'The directory containing the techdocs files'
+        required: false
+        default: 'docs/techdocs'
+
+jobs:
+  generate-documentation:
+    name: 'Generate'
+    uses: webgrip/workflows/.github/workflows/techdocs-generate.yml@main
+    with:
+      source-dir: ${{ github.event.inputs.source-dir || 'docs/techdocs' }}
+
+  deploy-documentation:
+    name: 'Deploy'
+    uses: webgrip/workflows/.github/workflows/techdocs-deploy-gh-pages.yml@main
+    needs: generate-documentation
+    if: >
+      'refs/heads/main' == ${{ github.ref }}

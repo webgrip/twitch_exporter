@@ -1,0 +1,15 @@
+services:
+  # Gate the exporter startup on tests + lint passing.
+  check:
+    image: alpine:3.20
+    depends_on:
+      go:
+        condition: service_completed_successfully
+      golangci-lint:
+        condition: service_completed_successfully
+    command: ["sh", "-lc", "echo 'checks passed'"]
+
+  twitch-exporter:
+    depends_on:
+      check:
+        condition: service_completed_successfully
