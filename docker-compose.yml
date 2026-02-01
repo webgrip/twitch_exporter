@@ -4,7 +4,7 @@ services:
       - .env
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ops/docker/application/Dockerfile
       args:
         GO_VERSION: "1.24.2"
     image: twitch-exporter:local
