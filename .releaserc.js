@@ -81,7 +81,7 @@ const isMainBranch = branchName === 'main';
 const plugins = [
   commitAnalyzerConfig,
   releaseNotesGeneratorConfig,
-  npmConfig,
+//   npmConfig,
   ...(isMainBranch ? [changelogConfig, gitConfig] : []),
   execConfig,
   '@semantic-release/github',
