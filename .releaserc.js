@@ -43,14 +43,12 @@ const releaseNotesGeneratorConfig = [
   },
 ];
 
-
-// Keep this commented out as you wanted
-const npmConfig = [
-  '@semantic-release/npm',
-  {
-    npmPublish: false,
-  },
-];
+// const npmConfig = [
+//   '@semantic-release/npm',
+//   {
+//     npmPublish: false,
+//   },
+// ];
 
 const changelogConfig = [
   '@semantic-release/changelog',
