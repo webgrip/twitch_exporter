@@ -62,7 +62,7 @@ const changelogConfig = [
 const gitConfig = [
   '@semantic-release/git',
   {
-    assets: ['CHANGELOG.md', 'package.json', 'package-lock.json'],
+    assets: ['CHANGELOG.md'],
     message: 'chore(release): ${nextRelease.version}\n\n${nextRelease.notes}',
   },
 ];
