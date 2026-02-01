@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/webgrip/twitch_exporter/compare/1.0.0...1.0.1) (2026-02-01)
+
+### Fixed
+
+* moved dockerfile to where it's supposed to be ([955da38](https://github.com/webgrip/twitch_exporter/commit/955da38dbcd4c5721af964a89016fb96315e7e0e))
+
 ## 1.0.0 (2026-02-01)
 
 ### Added
