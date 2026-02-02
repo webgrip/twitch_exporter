@@ -8,7 +8,7 @@ on:
     types: [published]
 
 jobs:
-  release-distribute:
+  release-distribute-docker-hub:
     name: 'Release'
     uses: webgrip/workflows/.github/workflows/application-release-distribute.yml@main
     secrets:
@@ -16,3 +16,13 @@ jobs:
       DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
     with:
       version: '${{ github.event.release.tag_name }}'
+
+  release-distribute-ghcr:
+    name: 'Distribute'
+    uses: webgrip/workflows/.github/workflows/docker-build-and-push-ghcr.yml@main
+    with:
+      docker-context: ${{ inputs.docker_context }}
+      docker-file: ${{ inputs.docker_file }}
+      docker-tags: |
+        ${{github.repository_owner}}/${{ github.event.repository.name }}:latest
+        ${{github.repository_owner}}/${{ github.event.repository.name }}:${{ inputs.version }}

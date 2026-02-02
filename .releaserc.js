@@ -43,13 +43,6 @@ const releaseNotesGeneratorConfig = [
   },
 ];
 
-// const npmConfig = [
-//   '@semantic-release/npm',
-//   {
-//     npmPublish: false,
-//   },
-// ];
-
 const changelogConfig = [
   '@semantic-release/changelog',
   {
@@ -81,7 +74,6 @@ const isMainBranch = branchName === 'main';
 const plugins = [
   commitAnalyzerConfig,
   releaseNotesGeneratorConfig,
-//   npmConfig,
   ...(isMainBranch ? [changelogConfig, gitConfig] : []),
   execConfig,
   '@semantic-release/github',
