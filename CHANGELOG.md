@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/webgrip/twitch_exporter/compare/1.0.1...1.0.2) (2026-02-02)
+
+### Fixed
+
+* removed some stuff and distribute docker image to ghcr too ([e55100f](https://github.com/webgrip/twitch_exporter/commit/e55100fc89e6b627b6c57af9272611e7544fc44a))
+
 ## [1.0.1](https://github.com/webgrip/twitch_exporter/compare/1.0.0...1.0.1) (2026-02-01)
 
 ### Fixed
