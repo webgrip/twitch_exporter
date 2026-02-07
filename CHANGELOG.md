@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/webgrip/twitch_exporter/compare/1.0.2...1.0.3) (2026-02-07)
+
+### Fixed
+
+* actually push to the ghcr artifact storage ([1297111](https://github.com/webgrip/twitch_exporter/commit/12971118f6998533ec72f1c4434f7dd0d2ca47df))
+
 ## [1.0.2](https://github.com/webgrip/twitch_exporter/compare/1.0.1...1.0.2) (2026-02-02)
 
 ### Fixed
