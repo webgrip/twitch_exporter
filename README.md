@@ -1,8 +1,8 @@
 # Twitch Exporter
 
-[![CircleCI](https://circleci.com/gh/webgrip/twitch_exporter/tree/master.svg?style=shield)][circleci]
-[![Docker Pulls](https://img.shields.io/docker/pulls/webgrip/twitch-exporter.svg?maxAge=604800)][hub]
-[![Go Report Card](https://goreportcard.com/badge/github.com/webgrip/twitch_exporter)][goreportcard]
+[![CircleCI](https://circleci.com/gh/damoun/twitch_exporter/tree/master.svg?style=shield)][circleci]
+[![Docker Pulls](https://img.shields.io/docker/pulls/damoun/twitch-exporter.svg?maxAge=604800)][hub]
+[![Go Report Card](https://goreportcard.com/badge/github.com/damoun/twitch_exporter)][goreportcard]
 
 Export [Twitch](https://dev.twitch.tv/docs/api/reference) metrics to [Prometheus](https://github.com/prometheus/prometheus).
 
@@ -173,15 +173,15 @@ TODO
 
 ## Using Docker
 
-You can deploy this exporter using the [webgrip/twitch-exporter](https://hub.docker.com/r/webgrip/twitch-exporter/) Docker image.
+You can deploy this exporter using the [damoun/twitch-exporter](https://hub.docker.com/r/damoun/twitch-exporter/) Docker image.
 
 For example:
 
 ```bash
-docker pull webgrip/twitch-exporter
+docker pull damoun/twitch-exporter
 
 docker run -d -p 9184:9184 \
-        webgrip/twitch-exporter \
+        damoun/twitch-exporter \
         --twitch.client-id <secret> \
         --twitch.access-token <secret> \
         --twitch.channel dam0un
@@ -211,6 +211,6 @@ If you want to deploy to Kubernetes, use a generic chart like `oci://ghcr.io/bjw
 - Ingress so `GET /metrics` is reachable by Prometheus
 - If enabling EventSub: a publicly reachable HTTPS `POST /eventsub` endpoint, with request body and Twitch headers preserved
 
-[circleci]: https://circleci.com/gh/webgrip/twitch_exporter
-[hub]: https://hub.docker.com/r/webgrip/twitch-exporter/
-[goreportcard]: https://goreportcard.com/report/github.com/webgrip/twitch_exporter
+[circleci]: https://circleci.com/gh/damoun/twitch_exporter
+[hub]: https://hub.docker.com/r/damoun/twitch-exporter/
+[goreportcard]: https://goreportcard.com/report/github.com/damoun/twitch_exporter

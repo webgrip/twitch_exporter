@@ -21,8 +21,8 @@ jobs:
     name: 'Distribute'
     uses: webgrip/workflows/.github/workflows/docker-build-and-push-ghcr.yml@main
     with:
-      docker-context: ${{ inputs.docker_context }}
-      docker-file: ${{ inputs.docker_file }}
+      docker-context: "."
+      docker-file: "ops/docker/application/Dockerfile"
       docker-tags: |
         ${{github.repository_owner}}/${{ github.event.repository.name }}:latest
-        ${{github.repository_owner}}/${{ github.event.repository.name }}:${{ inputs.version }}
+        ${{github.repository_owner}}/${{ github.event.repository.name }}:${{ github.event.release.tag_name }}
